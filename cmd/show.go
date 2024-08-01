@@ -33,7 +33,7 @@ var showCmd = &cobra.Command{
 				previousLayer = layer
 			}
 		} else {
-			fmt.Printf("❌🥞 branch %s is not part of a stack\n", currentBranch)
+			fmt.Printf("❌ branch %s is not part of a stack\n", currentBranch)
 
 			os.Exit(1)
 		}
