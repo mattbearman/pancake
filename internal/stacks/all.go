@@ -2,9 +2,15 @@ package stacks
 
 import (
 	"strings"
+
+	"github.com/mattbearman/pancake/internal/git"
 )
 
 var allStacks []*stack
+
+func Current() *stack {
+	return ForBranch(git.CurrentBranch())
+}
 
 func ForBranch(branchName string) *stack {
 	for s := 0; s < len(allStacks); s++ {

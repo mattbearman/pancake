@@ -19,6 +19,7 @@ func NewBranch(branchName string) {
 
 func CommitsBetween(start string, end string) string {
 	commitRange := strings.Join([]string{start, "..", end}, "")
+
 	return gitExec("show", "--no-patch", `--format="     - %h - %s"`, commitRange)
 }
 
