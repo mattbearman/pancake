@@ -8,11 +8,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// startCmd represents the start command
 var nextCmd = &cobra.Command{
 	Use:   "next [branch name (optional)]",
-	Short: "Starts a new layer in the current stack",
-	Long: `Starts a new layer in the current stack, branch name will default to "part-X" if not provided, where X is the the current number of layers +1
+	Short: "Start a new layer in the current stack",
+	Long: `Start a new layer in the current stack, branch name will default to "part-X" if not provided, where X is the the current number of layers +1
 
 	Eg: if your stack has 4 layers currently, calling pancake next will create a new layer called part-5`,
 	Args: cobra.MaximumNArgs(1),
@@ -21,10 +20,14 @@ var nextCmd = &cobra.Command{
 
 		stack := stacks.Current()
 
-		branchName := fmt.Sprintf("part-%d", len(stack.Layers)+1)
+		// TODO: Ensure we're currently at the top of the stack
+
+		var branchName string
 
 		if len(args) == 1 {
 			branchName = args[0]
+		} else {
+			branchName = fmt.Sprintf("part-%d", len(stack.Layers)+1)
 		}
 
 		layer := stack.AddLayer(branchName)

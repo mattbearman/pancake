@@ -2,14 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/mattbearman/pancake/internal/git"
 	"github.com/mattbearman/pancake/internal/stacks"
 	"github.com/spf13/cobra"
 )
 
-// startCmd represents the start command
 var showCmd = &cobra.Command{
 	Use:   "show",
 	Short: "Display details of the current working stack",
@@ -20,23 +18,16 @@ var showCmd = &cobra.Command{
 		currentBranch := git.CurrentBranch()
 		stack := stacks.ForBranch(currentBranch)
 
-		if stack != nil {
-			fmt.Printf("🥞 Current stack: %s\n", currentBranch)
-			fmt.Println("   Layers:")
+		fmt.Printf("🥞 Current stack: %s\n", currentBranch)
+		fmt.Println("   Layers:")
 
-			previousLayer := stack.BaseBranch
+		previousLayer := stack.BaseBranch
 
-			for i := 0; i < len(stack.Layers); i++ {
-				layer := stack.Layers[i]
-				fmt.Printf("   - %s\n", layer)
-				fmt.Println(git.CommitsBetween(previousLayer, layer))
-				previousLayer = layer
-			}
-		} else {
-			fmt.Printf("❌ branch %s is not part of a stack\n", currentBranch)
-
-			os.Exit(1)
-		}
+		stack.EachLayer(func(_ int, layer string) {
+			fmt.Printf("   - %s\n", layer)
+			fmt.Println(git.CommitsBetween(previousLayer, layer))
+			previousLayer = layer
+		})
 	},
 }
 

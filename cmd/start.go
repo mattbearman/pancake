@@ -8,7 +8,6 @@ import (
 
 var separator string
 
-// startCmd represents the start command
 var startCmd = &cobra.Command{
 	Use:   "start [stack name] [branch name (optional)]",
 	Short: "Start a new stack",

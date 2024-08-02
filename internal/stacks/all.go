@@ -1,6 +1,8 @@
 package stacks
 
 import (
+	"fmt"
+	"os"
 	"strings"
 
 	"github.com/mattbearman/pancake/internal/git"
@@ -24,6 +26,9 @@ func ForBranch(branchName string) *stack {
 			}
 		}
 	}
+
+	fmt.Printf("❌ branch %s is not part of a stack\n", branchName)
+	os.Exit(1)
 
 	return nil
 }

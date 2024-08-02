@@ -18,6 +18,10 @@ func NewBranch(branchName string) {
 	gitExec("switch", "-c", branchName)
 }
 
+func ChangeBranch(branchName string) {
+	gitExec("switch", branchName)
+}
+
 func CommitsBetween(start string, end string) string {
 	commitRange := strings.Join([]string{start, "..", end}, "")
 
