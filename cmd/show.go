@@ -18,7 +18,7 @@ var showCmd = &cobra.Command{
 		currentBranch := git.CurrentBranch()
 		stack := stacks.ForBranch(currentBranch)
 
-		fmt.Printf("🥞 Current stack: %s\n", currentBranch)
+		fmt.Printf("🥞 Current stack: %s\n", stack.Name)
 		fmt.Println("   Layers:")
 
 		previousLayer := stack.BaseBranch
