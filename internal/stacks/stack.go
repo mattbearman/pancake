@@ -62,8 +62,8 @@ func (s *stack) LayerIndex(desiredLayer string) int {
 	return layerIndex
 }
 
-func (s *stack) EachLayer(itterator func(int, string)) {
+func (s *stack) EachLayer(iterator func(int, string)) {
 	for i := 0; i < len(s.Layers); i++ {
-		itterator(i, s.Layers[i])
+		iterator(i, s.Layers[i])
 	}
 }
