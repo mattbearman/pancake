@@ -8,20 +8,18 @@ import (
 	"github.com/mattbearman/pancake/internal/git"
 )
 
-type stack struct {
+type Stack struct {
 	Name, BaseBranch, Separator string
 	Layers                      []string
 }
 
-func (s *stack) AddLayer(unscopedBranchName string) (fullBranchName string) {
-	fullBranchName = strings.Join([]string{s.Name, s.Separator, unscopedBranchName}, "")
+func (s *Stack) AddLayer(layerName string) string {
+	s.Layers = append(s.Layers, layerName)
 
-	s.Layers = append(s.Layers, fullBranchName)
-
-	return
+	return s.BranchForLayer(layerName)
 }
 
-func (s *stack) UpLayer() (branchName *string) {
+func (s *Stack) UpLayer() (branchName *string) {
 	currentLayer := git.CurrentBranch()
 	currentIndex := s.LayerIndex(currentLayer)
 	layerCount := len(s.Layers)
@@ -34,7 +32,7 @@ func (s *stack) UpLayer() (branchName *string) {
 	return &s.Layers[nextIndex]
 }
 
-func (s *stack) DownLayer() (branchName *string) {
+func (s *Stack) DownLayer() (branchName *string) {
 	currentLayer := git.CurrentBranch()
 	currentIndex := s.LayerIndex(currentLayer)
 
@@ -45,7 +43,7 @@ func (s *stack) DownLayer() (branchName *string) {
 	return &s.Layers[currentIndex-1]
 }
 
-func (s *stack) LayerIndex(desiredLayer string) int {
+func (s *Stack) LayerIndex(desiredLayer string) int {
 	layerIndex := -1
 
 	s.EachLayer(func(index int, layer string) {
@@ -62,8 +60,12 @@ func (s *stack) LayerIndex(desiredLayer string) int {
 	return layerIndex
 }
 
-func (s *stack) EachLayer(iterator func(int, string)) {
+func (s *Stack) EachLayer(iterator func(int, string)) {
 	for i := 0; i < len(s.Layers); i++ {
 		iterator(i, s.Layers[i])
 	}
+}
+
+func (s *Stack) BranchForLayer(layer string) string {
+	return strings.Join([]string{s.Name, s.Separator, layer}, "")
 }

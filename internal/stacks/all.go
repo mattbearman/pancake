@@ -8,13 +8,13 @@ import (
 	"github.com/mattbearman/pancake/internal/git"
 )
 
-var allStacks []*stack
+var allStacks []*Stack
 
-func Current() *stack {
+func Current() *Stack {
 	return ForBranch(git.CurrentBranch())
 }
 
-func ForBranch(branchName string) *stack {
+func ForBranch(branchName string) *Stack {
 	for s := 0; s < len(allStacks); s++ {
 		stack := allStacks[s]
 
@@ -33,8 +33,8 @@ func ForBranch(branchName string) *stack {
 	return nil
 }
 
-func Add(name string, baseBranch string, separator string) *stack {
-	s := stack{Name: name, BaseBranch: baseBranch, Separator: separator}
+func Add(name string, baseBranch string, separator string) *Stack {
+	s := Stack{Name: name, BaseBranch: baseBranch, Separator: separator}
 
 	allStacks = append(allStacks, &s)
 

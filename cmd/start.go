@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"fmt"
+	"io"
+	"os"
+
 	"github.com/mattbearman/pancake/internal/git"
 	"github.com/mattbearman/pancake/internal/stacks"
 	"github.com/spf13/cobra"
@@ -28,23 +32,47 @@ pancake start new-feature setup --separator=_
 creates a new branch called "new-feature_setup"`,
 	Args: cobra.MatchAll(cobra.MinimumNArgs(1), cobra.MaximumNArgs(2)),
 	Run: func(cmd *cobra.Command, args []string) {
-		stacks.Load()
+		gitCli := git.Cli{}
 
-		stackName := args[0]
+		stackList := *stacks.LoadList(&gitCli)
 
-		branchName := "part-1"
+		start(stackList, &gitCli, os.Stdout, args...)
+		// stacks.Load()
 
-		if len(args) == 2 {
-			branchName = args[1]
-		}
+		// stackName := args[0]
 
-		stack := stacks.Add(stackName, git.CurrentBranch(), separator)
-		layer := stack.AddLayer(branchName)
+		// branchName := "part-1"
 
-		git.NewBranch(layer)
+		// if len(args) == 2 {
+		// 	branchName = args[1]
+		// }
 
-		stacks.Save()
+		// stack := stacks.Add(stackName, git.CurrentBranch(), separator)
+		// layer := stack.AddLayer(branchName)
+
+		// git.NewBranch(layer)
+
+		// stacks.Save()
 	},
+}
+
+func start(l stacks.List, g git.Driver, out io.Writer, args ...string) {
+	stackName := args[0]
+
+	branchName := "part-1"
+
+	if len(args) == 2 {
+		branchName = args[1]
+	}
+
+	stack := l.Add(stackName, g.CurrentBranch(), separator)
+	layer := stack.AddLayer(branchName)
+
+	g.NewBranch(layer)
+
+	l.Save()
+
+	fmt.Fprintf(out, "🥞 Created new stack \"%s\". Working in git branch \"%s\"\n", stackName, branchName)
 }
 
 func init() {
