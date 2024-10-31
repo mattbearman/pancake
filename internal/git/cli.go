@@ -1,6 +1,7 @@
 package git
 
 import (
+	"fmt"
 	"os/exec"
 	"strings"
 )
@@ -33,9 +34,12 @@ func (c *Cli) NewBranch(branchName string) {
 func (c *Cli) gitExec(args ...string) string {
 	command := exec.Command("git", args...)
 
-	out, err := command.Output()
+	out, err := command.CombinedOutput()
 
 	if err != nil {
+		// Get error text and display it
+		fmt.Println(string(out))
+
 		panic(err)
 	}
 

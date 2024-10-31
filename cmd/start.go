@@ -13,12 +13,12 @@ import (
 var separator string
 
 var startCmd = &cobra.Command{
-	Use:   "start [stack name] [branch name (optional)]",
+	Use:   "start [stack name] [layer name (optional)]",
 	Short: "Start a new stack",
-	Long: `Creates a new branch based on the stack name, separator and branch name,
-and initializes a stack starting with that branch
+	Long: `Creates a new branch based on the stack name, separator and layer name,
+and initializes a stack starting with that layer
 
-Stack name must be provided, branch name will default to "part-1" if not provided,
+Stack name must be provided, layer name will default to "part-1" if not provided,
 and the default separator is "/"
 
 Eg:
@@ -37,42 +37,32 @@ creates a new branch called "new-feature_setup"`,
 		stackList := *stacks.LoadList(&gitCli)
 
 		start(stackList, &gitCli, os.Stdout, args...)
-		// stacks.Load()
-
-		// stackName := args[0]
-
-		// branchName := "part-1"
-
-		// if len(args) == 2 {
-		// 	branchName = args[1]
-		// }
-
-		// stack := stacks.Add(stackName, git.CurrentBranch(), separator)
-		// layer := stack.AddLayer(branchName)
-
-		// git.NewBranch(layer)
-
-		// stacks.Save()
 	},
 }
 
-func start(l stacks.List, g git.Driver, out io.Writer, args ...string) {
+func start(l stacks.List, g GitStarter, out io.Writer, args ...string) {
 	stackName := args[0]
 
-	branchName := "part-1"
+	layerName := "part-1"
 
 	if len(args) == 2 {
-		branchName = args[1]
+		layerName = args[1]
 	}
 
 	stack := l.Add(stackName, g.CurrentBranch(), separator)
-	layer := stack.AddLayer(branchName)
+	stack.AddLayer(layerName)
 
-	g.NewBranch(layer)
+	branchName := stack.BranchForLayer(layerName)
+	g.NewBranch(branchName)
 
 	l.Save()
 
 	fmt.Fprintf(out, "🥞 Created new stack \"%s\". Working in git branch \"%s\"\n", stackName, branchName)
+}
+
+type GitStarter interface {
+	CurrentBranch() string
+	NewBranch(branchName string)
 }
 
 func init() {

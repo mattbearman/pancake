@@ -27,7 +27,7 @@ var showCmd = &cobra.Command{
 	},
 }
 
-func show(l stacks.List, g git.Driver, out io.Writer) {
+func show(l stacks.List, g GitShower, out io.Writer) {
 	currentBranch := g.CurrentBranch()
 	stack := l.ForBranch(currentBranch)
 
@@ -50,4 +50,9 @@ func show(l stacks.List, g git.Driver, out io.Writer) {
 
 		previousBranch = currentBranch
 	})
+}
+
+type GitShower interface {
+	CurrentBranch() string
+	CommitsBetween(from string, to string) []string
 }

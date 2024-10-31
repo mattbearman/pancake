@@ -7,16 +7,14 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/mattbearman/pancake/internal/git"
 )
 
-func LoadList(g git.Driver) *List {
+func LoadList(g GitInterface) *List {
 	pancakeFile := filepath.Join(g.RootDir(), ".pancake.json")
 
 	dat, err := os.ReadFile(pancakeFile)
 
-	list := List{file: pancakeFile}
+	list := NewList(pancakeFile)
 
 	if err != nil {
 		// Swallow file not found error, as we will initialize an empty slice of stacks
@@ -25,10 +23,17 @@ func LoadList(g git.Driver) *List {
 		}
 	} else {
 		json.Unmarshal([]byte(dat), &list.Stacks)
-
 	}
 
-	return &list
+	return list
+}
+
+type GitInterface interface {
+	RootDir() string
+}
+
+func NewList(file string) *List {
+	return &List{file: file}
 }
 
 type List struct {

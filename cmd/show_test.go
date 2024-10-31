@@ -4,18 +4,28 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/mattbearman/pancake/internal/git"
 	"github.com/mattbearman/pancake/internal/stacks"
 )
 
-func TestShow(t *testing.T) {
-	g := &git.Mock{
-		Branch: "feature/layer2",
-		LayerCommits: map[string][]string{
-			"feature/layer1": {"abc123 - commit1", "def456 - commit2"},
-			"feature/layer2": {"ghi789 - commit3", "jkl012 - commit4"},
-		},
+type gitMock struct{}
+
+func (g *gitMock) CurrentBranch() string {
+	return "feature/layer2"
+}
+
+func (g *gitMock) CommitsBetween(from string, to string) []string {
+	switch to {
+	case "feature/layer1":
+		return []string{"abc123 - commit1", "def456 - commit2"}
+	case "feature/layer2":
+		return []string{"ghi789 - commit3", "jkl012 - commit4"}
 	}
+
+	return []string{}
+}
+
+func TestShow(t *testing.T) {
+	g := gitMock{}
 
 	stackList := stacks.List{
 		Stacks: []*stacks.Stack{
@@ -29,7 +39,7 @@ func TestShow(t *testing.T) {
 	}
 
 	buf := &bytes.Buffer{}
-	show(stackList, g, buf)
+	show(stackList, &g, buf)
 
 	expectedOutput := `🥞 Current stack: feature
    Layers:

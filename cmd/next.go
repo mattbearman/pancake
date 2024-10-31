@@ -22,17 +22,19 @@ var nextCmd = &cobra.Command{
 
 		// TODO: Ensure we're currently at the top of the stack
 
-		var branchName string
+		var layerName string
 
 		if len(args) == 1 {
-			branchName = args[0]
+			layerName = args[0]
 		} else {
-			branchName = fmt.Sprintf("part-%d", len(stack.Layers)+1)
+			layerName = fmt.Sprintf("part-%d", len(stack.Layers)+1)
 		}
 
-		layer := stack.AddLayer(branchName)
+		stack.AddLayer(layerName)
 
-		git.NewBranch(layer)
+		branchName := stack.BranchForLayer(layerName)
+
+		git.NewBranch(branchName)
 
 		stacks.Save()
 	},

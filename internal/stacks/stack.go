@@ -9,14 +9,14 @@ import (
 )
 
 type Stack struct {
-	Name, BaseBranch, Separator string
-	Layers                      []string
+	Name       string   `json:"name"`
+	BaseBranch string   `json:"baseBranch"`
+	Separator  string   `json:"separator"`
+	Layers     []string `json:"layers"`
 }
 
-func (s *Stack) AddLayer(layerName string) string {
+func (s *Stack) AddLayer(layerName string) {
 	s.Layers = append(s.Layers, layerName)
-
-	return s.BranchForLayer(layerName)
 }
 
 func (s *Stack) UpLayer() (branchName *string) {
