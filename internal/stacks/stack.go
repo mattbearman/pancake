@@ -1,63 +1,43 @@
 package stacks
 
 import (
-	"fmt"
-	"os"
 	"strings"
-
-	"github.com/mattbearman/pancake/internal/git"
 )
 
 type Stack struct {
-	Name       string   `json:"name"`
-	BaseBranch string   `json:"baseBranch"`
-	Separator  string   `json:"separator"`
-	Layers     []string `json:"layers"`
+	Name              string   `json:"name"`
+	BaseBranch        string   `json:"baseBranch"`
+	Separator         string   `json:"separator"`
+	Layers            []string `json:"layers"`
+	currentLayerIndex int
 }
 
 func (s *Stack) AddLayer(layerName string) {
 	s.Layers = append(s.Layers, layerName)
 }
 
-func (s *Stack) UpLayer() (branchName *string) {
-	currentLayer := git.CurrentBranch()
-	currentIndex := s.LayerIndex(currentLayer)
-	layerCount := len(s.Layers)
-	nextIndex := currentIndex + 1
+func (s *Stack) UpLayer() string {
+	nextIndex := s.currentLayerIndex + 1
 
-	if nextIndex == layerCount {
-		return nil
+	if nextIndex >= len(s.Layers) {
+		return s.Layers[s.currentLayerIndex]
 	}
 
-	return &s.Layers[nextIndex]
+	return s.Layers[nextIndex]
 }
 
-func (s *Stack) DownLayer() (branchName *string) {
-	currentLayer := git.CurrentBranch()
-	currentIndex := s.LayerIndex(currentLayer)
+func (s *Stack) DownLayer() string {
+	prevIndex := s.currentLayerIndex - 1
 
-	if currentIndex == 0 {
-		return nil
+	if prevIndex < 0 {
+		return s.Layers[s.currentLayerIndex]
 	}
 
-	return &s.Layers[currentIndex-1]
+	return s.Layers[prevIndex]
 }
 
-func (s *Stack) LayerIndex(desiredLayer string) int {
-	layerIndex := -1
-
-	s.EachLayer(func(index int, layer string) {
-		if layer == desiredLayer {
-			layerIndex = index
-		}
-	})
-
-	if layerIndex == -1 {
-		fmt.Printf("❌ branch %s is not part of the %s stack\n", desiredLayer, s.Name)
-		os.Exit(1)
-	}
-
-	return layerIndex
+func (s *Stack) CurrentLayer() string {
+	return s.Layers[s.currentLayerIndex]
 }
 
 func (s *Stack) EachLayer(iterator func(int, string)) {

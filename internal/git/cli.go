@@ -31,6 +31,10 @@ func (c *Cli) NewBranch(branchName string) {
 	c.gitExec("switch", "-c", branchName)
 }
 
+func (c *Cli) ChangeBranch(branchName string) {
+	c.gitExec("switch", branchName)
+}
+
 func (c *Cli) gitExec(args ...string) string {
 	command := exec.Command("git", args...)
 

@@ -49,6 +49,8 @@ func (l *List) ForBranch(branchName string) (*Stack, error) {
 			for l := 0; l < len(stack.Layers); l++ {
 				layerBranch := stack.BranchForLayer(stack.Layers[l])
 				if layerBranch == branchName {
+					stack.currentLayerIndex = l
+
 					return stack, nil
 				}
 			}
