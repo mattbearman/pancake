@@ -19,14 +19,12 @@ var showCmd = &cobra.Command{
 	Use:   "show",
 	Short: "Display details of the current working stack",
 	Long:  "Display details of the current working stack listing all the layers, and the commits in each layer",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		gitCli := &git.Cli{}
 
 		stackList := *stacks.LoadList(gitCli)
 
-		exitCode := show(stackList, gitCli, os.Stdout)
-
-		os.Exit(exitCode)
+		return show(stackList, gitCli, os.Stdout)
 	},
 }
 
@@ -34,14 +32,12 @@ func init() {
 	rootCmd.AddCommand(showCmd)
 }
 
-func show(l stacks.List, g GitForShowCmd, out io.Writer) int {
+func show(l stacks.List, g GitForShowCmd, out io.Writer) error {
 	currentBranch := g.CurrentBranch()
-	stack, error := l.ForBranch(currentBranch)
+	stack, err := l.ForBranch(currentBranch)
 
-	if error != nil {
-		fmt.Fprintln(out, error)
-
-		return 1
+	if err != nil {
+		return err
 	}
 
 	fmt.Fprintf(out, "🥞 Current stack: %s\n", stack.Name)
@@ -64,5 +60,5 @@ func show(l stacks.List, g GitForShowCmd, out io.Writer) int {
 		previousBranch = currentBranch
 	})
 
-	return 0
+	return nil
 }

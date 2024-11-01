@@ -34,7 +34,7 @@ func TestShow(t *testing.T) {
 		name              string
 		gitForShowCmdMock GitForShowCmd
 		expectedOutput    string
-		expectedExitCode  int
+		expectedError     error
 	}{
 		{
 			name: "show stack layers and commits",
@@ -50,24 +50,22 @@ func TestShow(t *testing.T) {
    - layer2
      ghi789 - commit3
      jkl012 - commit4
+
 `,
-			expectedExitCode: 0,
 		},
 		{
 			name: "not in a stack",
 			gitForShowCmdMock: &gitForShowCmdMock{
 				currentBranch: "main",
 			},
-			expectedOutput:   `❌ branch "main" is not part of a stack`,
-			expectedExitCode: 1,
+			expectedError: fmt.Errorf(`❌ branch "main" is not part of a stack`),
 		},
 		{
 			name: "unknown layer",
 			gitForShowCmdMock: &gitForShowCmdMock{
 				currentBranch: "feature/unknown",
 			},
-			expectedOutput:   `❌ layer "unknown" is not part of the "feature" stack`,
-			expectedExitCode: 1,
+			expectedError: fmt.Errorf(`❌ layer "unknown" is not part of the "feature" stack`),
 		},
 	}
 
@@ -87,12 +85,11 @@ func TestShow(t *testing.T) {
 
 		t.Run(testname, func(t *testing.T) {
 			buf := &bytes.Buffer{}
-			expectedOutput := fmt.Sprintf("%s\n", tt.expectedOutput)
 
-			exitCode := show(stackList, tt.gitForShowCmdMock, buf)
+			err := show(stackList, tt.gitForShowCmdMock, buf)
 
-			assert.Equal(t, expectedOutput, buf.String())
-			assert.Equal(t, tt.expectedExitCode, exitCode)
+			assert.Equal(t, tt.expectedOutput, buf.String())
+			assert.Equal(t, tt.expectedError, err)
 		})
 	}
 }

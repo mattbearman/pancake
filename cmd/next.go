@@ -22,14 +22,12 @@ var nextCmd = &cobra.Command{
 
 	Eg: if your stack has 4 layers currently, calling pancake next will create a new layer called part-5`,
 	Args: cobra.MaximumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		gitCli := git.Cli{}
 
 		stackList := *stacks.LoadList(&gitCli)
 
-		exitCode := next(stackList, &gitCli, os.Stdout, args...)
-
-		os.Exit(exitCode)
+		return next(stackList, &gitCli, os.Stdout, args...)
 	},
 }
 
@@ -37,14 +35,12 @@ func init() {
 	rootCmd.AddCommand(nextCmd)
 }
 
-func next(l stacks.List, g GitForNextCmd, out io.Writer, args ...string) int {
+func next(l stacks.List, g GitForNextCmd, out io.Writer, args ...string) error {
 	currentBranch := g.CurrentBranch()
-	stack, error := l.ForBranch(currentBranch)
+	stack, err := l.ForBranch(currentBranch)
 
-	if error != nil {
-		fmt.Fprintln(out, error)
-
-		return 1
+	if err != nil {
+		return err
 	}
 
 	// TODO: Ensure we're currently at the top of the stack
@@ -66,5 +62,5 @@ func next(l stacks.List, g GitForNextCmd, out io.Writer, args ...string) int {
 
 	fmt.Fprintf(out, "🥞 Created new layer \"%s\". Working in git branch \"%s\"\n", layerName, branchName)
 
-	return 0
+	return nil
 }

@@ -28,50 +28,45 @@ func TestNext(t *testing.T) {
 		separator         string
 		expectedOutput    string
 		expectedJSON      string
-		expectedExitCode  int
+		expectedError     error
 	}{
 		{
 			name:              "start a new layer with default layer name",
 			gitForNextCmdMock: &gitForNextCmdMock{currentBranch: "new-feature/part-2"},
-			args:              []string{},
 			separator:         "/",
-			expectedOutput:    `🥞 Created new layer "part-3". Working in git branch "new-feature/part-3"`,
-			expectedJSON:      `[{"name":"new-feature","baseBranch":"main","separator":"/","layers":["part-1","part-2","part-3"]}]`,
-			expectedExitCode:  0,
+			expectedOutput: `🥞 Created new layer "part-3". Working in git branch "new-feature/part-3"
+`,
+			expectedJSON: `[{"name":"new-feature","baseBranch":"main","separator":"/","layers":["part-1","part-2","part-3"]}]`,
 		},
 		{
 			name:              "start a new layer with specified layer name",
 			gitForNextCmdMock: &gitForNextCmdMock{currentBranch: "new-feature/part-2"},
 			args:              []string{"setup"},
 			separator:         "/",
-			expectedOutput:    `🥞 Created new layer "setup". Working in git branch "new-feature/setup"`,
-			expectedJSON:      `[{"name":"new-feature","baseBranch":"main","separator":"/","layers":["part-1","part-2","setup"]}]`,
-			expectedExitCode:  0,
+			expectedOutput: `🥞 Created new layer "setup". Working in git branch "new-feature/setup"
+`,
+			expectedJSON: `[{"name":"new-feature","baseBranch":"main","separator":"/","layers":["part-1","part-2","setup"]}]`,
 		},
 		{
 			name:              "start a new layer with specified layer name and separator",
 			gitForNextCmdMock: &gitForNextCmdMock{currentBranch: "new-feature_part-2"},
 			args:              []string{"init"},
 			separator:         "_",
-			expectedOutput:    `🥞 Created new layer "init". Working in git branch "new-feature_init"`,
-			expectedJSON:      `[{"name":"new-feature","baseBranch":"main","separator":"_","layers":["part-1","part-2","init"]}]`,
-			expectedExitCode:  0,
+			expectedOutput: `🥞 Created new layer "init". Working in git branch "new-feature_init"
+`,
+			expectedJSON: `[{"name":"new-feature","baseBranch":"main","separator":"_","layers":["part-1","part-2","init"]}]`,
 		},
 		{
 			name:              "not in a stack",
 			gitForNextCmdMock: &gitForNextCmdMock{currentBranch: "main"},
-			args:              []string{},
 			separator:         "/",
-			expectedOutput:    `❌ branch "main" is not part of a stack`,
-			expectedExitCode:  1,
+			expectedError:     fmt.Errorf(`❌ branch "main" is not part of a stack`),
 		},
 		{
 			name:              "unknown layer",
 			gitForNextCmdMock: &gitForNextCmdMock{currentBranch: "new-feature/unknown"},
-			args:              []string{},
 			separator:         "/",
-			expectedOutput:    `❌ layer "unknown" is not part of the "new-feature" stack`,
-			expectedExitCode:  1,
+			expectedError:     fmt.Errorf(`❌ layer "unknown" is not part of the "new-feature" stack`),
 		},
 		// TODO: Add test for when not at the top of the stack
 		// TODO: Add test for when layer name already exists in stack
@@ -91,12 +86,10 @@ func TestNext(t *testing.T) {
 
 			separator = tt.separator
 
-			expectedOutput := fmt.Sprintf("%s\n", tt.expectedOutput)
+			err := next(stackList, tt.gitForNextCmdMock, buf, tt.args...)
 
-			exitCode := next(stackList, tt.gitForNextCmdMock, buf, tt.args...)
-
-			assert.Equal(t, expectedOutput, buf.String())
-			assert.Equal(t, tt.expectedExitCode, exitCode)
+			assert.Equal(t, tt.expectedOutput, buf.String())
+			assert.Equal(t, tt.expectedError, err)
 
 			dat, err := os.ReadFile(stackFile)
 
