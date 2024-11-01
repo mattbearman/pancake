@@ -41,7 +41,7 @@ type List struct {
 	file   string
 }
 
-func (l *List) ForBranch(branchName string) *Stack {
+func (l *List) ForBranch(branchName string) (*Stack, error) {
 	for s := 0; s < len(l.Stacks); s++ {
 		stack := l.Stacks[s]
 
@@ -49,16 +49,18 @@ func (l *List) ForBranch(branchName string) *Stack {
 			for l := 0; l < len(stack.Layers); l++ {
 				layerBranch := stack.BranchForLayer(stack.Layers[l])
 				if layerBranch == branchName {
-					return stack
+					return stack, nil
 				}
 			}
+
+			// Remove the stack name and separator from the branch name to get the name of the layer we couldn't find
+			expectedLayer, _ := strings.CutPrefix(branchName, fmt.Sprintf("%s%s", stack.Name, stack.Separator))
+
+			return nil, fmt.Errorf(`❌ layer "%s" is not part of the "%s" stack`, expectedLayer, stack.Name)
 		}
 	}
 
-	fmt.Printf("❌ branch %s is not part of a stack\n", branchName)
-	os.Exit(1)
-
-	return nil
+	return nil, fmt.Errorf(`❌ branch "%s" is not part of a stack`, branchName)
 }
 
 func (l *List) Add(name string, baseBranch string, separator string) *Stack {

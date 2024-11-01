@@ -10,26 +10,39 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	rootCmd.AddCommand(showCmd)
+type GitForShowCmd interface {
+	CurrentBranch() string
+	CommitsBetween(from string, to string) []string
 }
 
 var showCmd = &cobra.Command{
 	Use:   "show",
 	Short: "Display details of the current working stack",
-	Long:  `Display details of the current working stack listing all the layers, and the commits in each layer`,
+	Long:  "Display details of the current working stack listing all the layers, and the commits in each layer",
 	Run: func(cmd *cobra.Command, args []string) {
-		gitCli := git.Cli{}
+		gitCli := &git.Cli{}
 
-		stackList := *stacks.LoadList(&gitCli)
+		stackList := *stacks.LoadList(gitCli)
 
-		show(stackList, &gitCli, os.Stdout)
+		exitCode := show(stackList, gitCli, os.Stdout)
+
+		os.Exit(exitCode)
 	},
 }
 
-func show(l stacks.List, g GitShower, out io.Writer) {
+func init() {
+	rootCmd.AddCommand(showCmd)
+}
+
+func show(l stacks.List, g GitForShowCmd, out io.Writer) int {
 	currentBranch := g.CurrentBranch()
-	stack := l.ForBranch(currentBranch)
+	stack, error := l.ForBranch(currentBranch)
+
+	if error != nil {
+		fmt.Fprintln(out, error)
+
+		return 1
+	}
 
 	fmt.Fprintf(out, "🥞 Current stack: %s\n", stack.Name)
 	fmt.Fprintln(out, "   Layers:")
@@ -50,9 +63,6 @@ func show(l stacks.List, g GitShower, out io.Writer) {
 
 		previousBranch = currentBranch
 	})
-}
 
-type GitShower interface {
-	CurrentBranch() string
-	CommitsBetween(from string, to string) []string
+	return 0
 }
